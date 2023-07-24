@@ -1,4 +1,4 @@
-package main
+package structs
 
 type LarkSubscriptionEventEncryptRequest struct {
 	Encrypt string `json:"encrypt" binding:"required"`

@@ -1,6 +1,10 @@
 package main
 
 import (
+	"Lark-Bot/internal/constants"
+	"Lark-Bot/internal/handlers"
+	"Lark-Bot/internal/structs"
+	"Lark-Bot/internal/utils"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -23,21 +27,33 @@ func main() {
 		})
 	})
 	r.POST("/lark", func(c *gin.Context) {
-		var larkSubscriptionEventRequest LarkSubscriptionEventEncryptRequest
+		var larkSubscriptionEventRequest structs.LarkSubscriptionEventEncryptRequest
 		c.BindJSON(&larkSubscriptionEventRequest)
-		decodeMessage, _ := Decrypt(larkSubscriptionEventRequest.Encrypt, encryptKey)
-		var larkSubscriptionEventDecryptedRequest LarkSubscriptionEventDecryptedRequest
+		decodeMessage, _ := utils.Decrypt(larkSubscriptionEventRequest.Encrypt, encryptKey)
+		var larkSubscriptionEventDecryptedRequest structs.LarkSubscriptionEventDecryptedRequest
 		json.Unmarshal([]byte(decodeMessage), &larkSubscriptionEventDecryptedRequest)
 		logrus.WithFields(logrus.Fields{
 			"request": decodeMessage,
 		}).Info("Received request from Lark")
 
-		if larkSubscriptionEventDecryptedRequest.Type == UrlVerification {
-			c.JSON(http.StatusOK, LarkUrlVerificationResponse{Challenge: larkSubscriptionEventDecryptedRequest.Challenge})
+		if larkSubscriptionEventDecryptedRequest.Type == constants.UrlVerification {
+			c.JSON(http.StatusOK, structs.LarkUrlVerificationResponse{Challenge: larkSubscriptionEventDecryptedRequest.Challenge})
 			return
 		}
 
-		c.JSON(http.StatusOK, nil)
+		switch larkSubscriptionEventDecryptedRequest.Header.EventType {
+		case constants.MessageReceive:
+			inCache := utils.CheckCache(larkSubscriptionEventDecryptedRequest.Event.Message.MessageId)
+			if inCache {
+				c.Status(http.StatusOK)
+				return
+			}
+			var larkMessageText structs.LarkMessageText
+			json.Unmarshal([]byte(larkSubscriptionEventDecryptedRequest.Event.Message.Content), &larkMessageText)
+			handlers.HandleReceivedMessage(larkMessageText.Text, larkSubscriptionEventDecryptedRequest.Event.Sender.SenderId.OpenId)
+		}
+		logrus.Infoln("return")
+		c.Status(http.StatusOK)
 	})
 	r.Run(":8888")
 }

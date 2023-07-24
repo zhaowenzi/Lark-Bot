@@ -1,14 +1,22 @@
-package main
+package utils
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/sashabaranov/go-openai"
+	"github.com/sirupsen/logrus"
 	"strings"
 )
+
+func GetUUID() string {
+	return uuid.New().String()
+}
 
 func Decrypt(encrypt string, key string) (string, error) {
 	buf, err := base64.StdEncoding.DecodeString(encrypt)
@@ -40,4 +48,35 @@ func Decrypt(encrypt string, key string) (string, error) {
 		m = len(buf) - 1
 	}
 	return string(buf[n : m+1]), nil
+}
+
+func CallOpenAI(request string) string {
+	resp, err := openaiClient.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: request,
+				},
+			},
+		})
+
+	if err != nil {
+		logrus.Warnf("ChatCompletion error: %v\n", err)
+		return ""
+	}
+
+	return resp.Choices[0].Message.Content
+}
+
+func CheckCache(key string) bool {
+	_, found := cache.Get(key)
+	if found {
+		return true
+	} else {
+		cache.SetDefault(key, 1)
+		return false
+	}
 }

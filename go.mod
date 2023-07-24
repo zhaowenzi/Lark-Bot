@@ -4,7 +4,11 @@ go 1.20
 
 require (
 	github.com/gin-gonic/gin v1.9.1
+	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.5.1
+	github.com/larksuite/oapi-sdk-go/v3 v3.0.24
+	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/sashabaranov/go-openai v1.14.1
 	github.com/sirupsen/logrus v1.9.3
 )
 
