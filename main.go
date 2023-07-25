@@ -48,9 +48,7 @@ func main() {
 				c.Status(http.StatusOK)
 				return
 			}
-			var larkMessageText structs.LarkMessageText
-			json.Unmarshal([]byte(larkSubscriptionEventDecryptedRequest.Event.Message.Content), &larkMessageText)
-			handlers.HandleReceivedMessage(larkMessageText.Text, larkSubscriptionEventDecryptedRequest.Event.Sender.SenderId.OpenId)
+			handlers.HandleReceivedMessage(larkSubscriptionEventDecryptedRequest)
 		}
 		logrus.Infoln("return")
 		c.Status(http.StatusOK)

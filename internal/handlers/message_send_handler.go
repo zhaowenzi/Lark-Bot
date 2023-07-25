@@ -7,13 +7,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func SendMessage(message string, openId string) {
+func SendMessage(message string, chat_type string, id string) {
 	logrus.Infoln(message)
-	logrus.Infoln(openId)
+	logrus.Infoln(id)
 	req := larkim.NewCreateMessageReqBuilder().
-		ReceiveIdType(`open_id`).
+		ReceiveIdType(chat_type).
 		Body(larkim.NewCreateMessageReqBodyBuilder().
-			ReceiveId(openId).
+			ReceiveId(id).
 			MsgType(`text`).
 			Content(message).
 			Uuid(utils.GetUUID()).
