@@ -1,16 +1,21 @@
 package utils
 
 import (
+	"Lark-Bot/internal/constants"
+	"Lark-Bot/internal/structs"
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
 	"strings"
 )
 
@@ -50,17 +55,27 @@ func Decrypt(encrypt string, key string) (string, error) {
 	return string(buf[n : m+1]), nil
 }
 
-func CallOpenAI(request string) string {
+func CallOpenAI(request []structs.RedisMessage) string {
+	var chatCompletionMessages []openai.ChatCompletionMessage
+	for _, message := range request {
+		if *message.SenderType == constants.SenderTypeUser {
+			chatCompletionMessages = append(chatCompletionMessages, openai.ChatCompletionMessage{
+				Role:    openai.ChatMessageRoleUser,
+				Content: gjson.Get(*message.Content, "text").String(),
+			})
+		} else {
+			chatCompletionMessages = append(chatCompletionMessages, openai.ChatCompletionMessage{
+				Role:    openai.ChatMessageRoleAssistant,
+				Content: gjson.Get(*message.Content, "text").String(),
+			})
+		}
+	}
+
 	resp, err := openaiClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: request,
-				},
-			},
+			Model:    openai.GPT3Dot5Turbo,
+			Messages: chatCompletionMessages,
 		})
 
 	if err != nil {
@@ -79,4 +94,21 @@ func CheckCache(key string) bool {
 		cache.SetDefault(key, 1)
 		return false
 	}
+}
+
+func GetAllParentMessages(key string) (messages []structs.RedisMessage) {
+	var slice *redis.StringSliceCmd
+	slice = GetRedisClient().LRange(ctx, key, 0, -1)
+
+	for index := range slice.Val() {
+		var eachDecoded structs.RedisMessage
+		json.Unmarshal([]byte(slice.Val()[index]), &eachDecoded)
+		messages = append(messages, eachDecoded)
+	}
+	return messages
+}
+
+func StoreMessage(key string, redisMessage structs.RedisMessage) {
+	encoded, _ := json.Marshal(redisMessage)
+	GetRedisClient().RPush(ctx, key, encoded)
 }

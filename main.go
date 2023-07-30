@@ -29,21 +29,21 @@ func main() {
 	r.POST("/lark", func(c *gin.Context) {
 		var larkSubscriptionEventRequest structs.LarkSubscriptionEventEncryptRequest
 		c.BindJSON(&larkSubscriptionEventRequest)
-		decodeMessage, _ := utils.Decrypt(larkSubscriptionEventRequest.Encrypt, encryptKey)
+		decodeMessage, _ := utils.Decrypt(*larkSubscriptionEventRequest.Encrypt, encryptKey)
 		var larkSubscriptionEventDecryptedRequest structs.LarkSubscriptionEventDecryptedRequest
 		json.Unmarshal([]byte(decodeMessage), &larkSubscriptionEventDecryptedRequest)
 		logrus.WithFields(logrus.Fields{
 			"request": decodeMessage,
 		}).Info("Received request from Lark")
 
-		if larkSubscriptionEventDecryptedRequest.Type == constants.UrlVerification {
-			c.JSON(http.StatusOK, structs.LarkUrlVerificationResponse{Challenge: larkSubscriptionEventDecryptedRequest.Challenge})
+		if larkSubscriptionEventDecryptedRequest.Type != nil && *larkSubscriptionEventDecryptedRequest.Type == constants.UrlVerification {
+			c.JSON(http.StatusOK, structs.LarkUrlVerificationResponse{Challenge: *larkSubscriptionEventDecryptedRequest.Challenge})
 			return
 		}
 
-		switch larkSubscriptionEventDecryptedRequest.Header.EventType {
+		switch *larkSubscriptionEventDecryptedRequest.Header.EventType {
 		case constants.MessageReceive:
-			inCache := utils.CheckCache(larkSubscriptionEventDecryptedRequest.Event.Message.MessageId)
+			inCache := utils.CheckCache(*larkSubscriptionEventDecryptedRequest.Event.Message.MessageId)
 			if inCache {
 				c.Status(http.StatusOK)
 				return
@@ -53,5 +53,5 @@ func main() {
 		logrus.Infoln("return")
 		c.Status(http.StatusOK)
 	})
-	r.Run(":8888")
+	r.Run(os.Getenv("GIN_ADDRESS"))
 }
