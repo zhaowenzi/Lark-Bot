@@ -5,6 +5,7 @@ import (
 	"Lark-Bot/internal/handlers"
 	"Lark-Bot/internal/structs"
 	"Lark-Bot/internal/utils"
+	"context"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -12,6 +13,8 @@ import (
 	"net/http"
 	"os"
 )
+
+var ctx = context.Background()
 
 func main() {
 	err := godotenv.Load()
@@ -50,7 +53,12 @@ func main() {
 			}
 			handlers.HandleReceivedMessage(larkSubscriptionEventDecryptedRequest)
 		}
-		logrus.Infoln("return")
+		c.Status(http.StatusOK)
+	})
+	r.POST("/msg", func(c *gin.Context) {
+		var textMessageRequest structs.TextMessageRequest
+		c.BindJSON(&textMessageRequest)
+		utils.GetRedisClient().RPush(ctx, "msg", *textMessageRequest.Text)
 		c.Status(http.StatusOK)
 	})
 	r.Run(os.Getenv("GIN_ADDRESS"))

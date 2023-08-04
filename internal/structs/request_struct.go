@@ -57,3 +57,7 @@ type LarkSubscriptionEventDecryptedRequest struct {
 	Header    LarkSubscriptionEventDecryptedEventHeader `json:"header"`
 	Event     LarkSubscriptionEventDecryptedEvent       `json:"event"`
 }
+
+type TextMessageRequest struct {
+	Text *string `json:"text"`
+}
