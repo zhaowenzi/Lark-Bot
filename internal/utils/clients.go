@@ -21,7 +21,9 @@ var larkClient *lark.Client
 
 var cache = cache2.New(10*time.Hour, 12*time.Hour)
 
-var redisClient *redis.Client
+var larkRedisClient *redis.Client
+
+var pasteRedisClient *redis.Client
 
 func init() {
 	err := godotenv.Load()
@@ -32,14 +34,23 @@ func init() {
 	openaiClient = openai.NewClient(os.Getenv("OPENAI_TOKEN"))
 	larkClient = lark.NewClient(os.Getenv("APP_ID"), os.Getenv("APP_SECRET"), lark.WithEnableTokenCache(true))
 
-	redisDBInt, err := strconv.Atoi(os.Getenv("REDIS_DB"))
+	larkDBInt, err := strconv.Atoi(os.Getenv("LARK_DB"))
 	if err != nil {
 		panic(err)
 	}
-	redisClient = redis.NewClient(&redis.Options{
+	pasteDBInt, err := strconv.Atoi(os.Getenv("PASTE_DB"))
+	if err != nil {
+		panic(err)
+	}
+	larkRedisClient = redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("REDIS_ADDRESS"),
 		Password: os.Getenv("REDIS_PASSWORD"),
-		DB:       redisDBInt,
+		DB:       larkDBInt,
+	})
+	pasteRedisClient = redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_ADDRESS"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       pasteDBInt,
 	})
 }
 
@@ -47,6 +58,10 @@ func GetLarkClient() *lark.Client {
 	return larkClient
 }
 
-func GetRedisClient() *redis.Client {
-	return redisClient
+func GetLarkRedisClient() *redis.Client {
+	return larkRedisClient
+}
+
+func GetPasteRedisClient() *redis.Client {
+	return pasteRedisClient
 }

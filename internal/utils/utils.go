@@ -98,7 +98,7 @@ func CheckCache(key string) bool {
 
 func GetAllParentMessages(key string) (messages []structs.RedisMessage) {
 	var slice *redis.StringSliceCmd
-	slice = GetRedisClient().LRange(ctx, key, 0, -1)
+	slice = GetLarkRedisClient().LRange(ctx, key, 0, -1)
 
 	for index := range slice.Val() {
 		var eachDecoded structs.RedisMessage
@@ -110,5 +110,5 @@ func GetAllParentMessages(key string) (messages []structs.RedisMessage) {
 
 func StoreMessage(key string, redisMessage structs.RedisMessage) {
 	encoded, _ := json.Marshal(redisMessage)
-	GetRedisClient().RPush(ctx, key, encoded)
+	GetLarkRedisClient().RPush(ctx, key, encoded)
 }

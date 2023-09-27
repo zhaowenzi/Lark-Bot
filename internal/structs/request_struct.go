@@ -61,3 +61,7 @@ type LarkSubscriptionEventDecryptedRequest struct {
 type TextMessageRequest struct {
 	Text *string `json:"text"`
 }
+
+type PastePostRequest struct {
+	PasteContent *string `json:"paste_content"`
+}

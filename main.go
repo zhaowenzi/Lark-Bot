@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+	"time"
 )
 
 var ctx = context.Background()
@@ -58,7 +59,19 @@ func main() {
 	r.POST("/msg", func(c *gin.Context) {
 		var textMessageRequest structs.TextMessageRequest
 		c.BindJSON(&textMessageRequest)
-		utils.GetRedisClient().RPush(ctx, "msg", *textMessageRequest.Text)
+		utils.GetLarkRedisClient().RPush(ctx, "msg", *textMessageRequest.Text)
+		c.Status(http.StatusOK)
+	})
+	r.GET("/paste", func(c *gin.Context) {
+		result, _ := utils.GetPasteRedisClient().LRange(ctx, time.Now().Format("2006-01-02"), -10, -1).Result()
+		c.JSON(http.StatusOK, gin.H{
+			"paste": result,
+		})
+	})
+	r.POST("/paste", func(c *gin.Context) {
+		var pastePostRequest structs.PastePostRequest
+		c.BindJSON(&pastePostRequest)
+		utils.GetPasteRedisClient().RPush(ctx, time.Now().Format("2006-01-02"), *pastePostRequest.PasteContent)
 		c.Status(http.StatusOK)
 	})
 	r.Run(os.Getenv("GIN_ADDRESS"))
