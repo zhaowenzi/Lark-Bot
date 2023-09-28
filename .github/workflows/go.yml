@@ -40,4 +40,4 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: lark-bot:latest
+        tags: ${{ secrets.REGISTRY }}/lark-bot:latest
