@@ -114,7 +114,8 @@ func StoreMessage(key string, redisMessage structs.RedisMessage) {
 	GetLarkRedisClient().RPush(ctx, key, encoded)
 }
 
+var location, _ = time.LoadLocation("America/Los_Angeles")
+
 func GetLosAngelesTimeZone() *time.Location {
-	location, _ := time.LoadLocation("America/Los_Angeles")
 	return location
 }
