@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"strings"
+	"time"
 )
 
 func GetUUID() string {
@@ -111,4 +112,9 @@ func GetAllParentMessages(key string) (messages []structs.RedisMessage) {
 func StoreMessage(key string, redisMessage structs.RedisMessage) {
 	encoded, _ := json.Marshal(redisMessage)
 	GetLarkRedisClient().RPush(ctx, key, encoded)
+}
+
+func GetLosAngelesTimeZone() *time.Location {
+	location, _ := time.LoadLocation("America/Los_Angeles")
+	return location
 }

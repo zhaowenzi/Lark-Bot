@@ -63,7 +63,7 @@ func main() {
 		c.Status(http.StatusOK)
 	})
 	r.GET("/paste", func(c *gin.Context) {
-		result, _ := utils.GetPasteRedisClient().LRange(ctx, time.Now().Format("2006-01-02"), -10, -1).Result()
+		result, _ := utils.GetPasteRedisClient().LRange(ctx, time.Now().In(utils.GetLosAngelesTimeZone()).Format("2006-01-02"), -10, -1).Result()
 		c.JSON(http.StatusOK, gin.H{
 			"paste": result,
 		})
@@ -71,7 +71,7 @@ func main() {
 	r.POST("/paste", func(c *gin.Context) {
 		var pastePostRequest structs.PastePostRequest
 		c.BindJSON(&pastePostRequest)
-		utils.GetPasteRedisClient().RPush(ctx, time.Now().Format("2006-01-02"), *pastePostRequest.PasteContent)
+		utils.GetPasteRedisClient().RPush(ctx, time.Now().In(utils.GetLosAngelesTimeZone()).Format("2006-01-02"), *pastePostRequest.PasteContent)
 		c.Status(http.StatusOK)
 	})
 	r.Run(os.Getenv("GIN_ADDRESS"))
