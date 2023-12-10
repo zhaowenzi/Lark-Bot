@@ -50,5 +50,13 @@ func HandleReceivedMessage(larkSubscriptionEventDecryptedRequest structs.LarkSub
 		returnObject := structs.LarkMessageText{Text: resp}
 		returnText, _ := json.Marshal(returnObject)
 		ReplyMessage(*larkSubscriptionEventDecryptedRequest.Event.Message.MessageId, string(returnText))
+	case strings.HasPrefix(gjson.Get(*messages[0].Content, "text").String(), constants.CommandChatgptConfig):
+		resp := make(map[string]string)
+		resp["CurrentModel"] = constants.CurrentChatGPTModel
+		resp["SupportedModels"] = strings.Join(constants.ChatGPTModels[:], ",")
+		respText, _ := json.Marshal(resp)
+		returnObject := structs.LarkMessageText{Text: string(respText)}
+		returnText, _ := json.Marshal(returnObject)
+		ReplyMessage(*larkSubscriptionEventDecryptedRequest.Event.Message.MessageId, string(returnText))
 	}
 }

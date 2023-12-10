@@ -75,7 +75,7 @@ func CallOpenAI(request []structs.RedisMessage) string {
 	resp, err := openaiClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:    openai.GPT3Dot5Turbo,
+			Model:    constants.CurrentChatGPTModel,
 			Messages: chatCompletionMessages,
 		})
 
