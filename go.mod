@@ -12,6 +12,7 @@ require (
 	github.com/sashabaranov/go-openai v1.14.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/tidwall/gjson v1.15.0
+	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
 )
 
 require (

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
+	"golang.org/x/exp/slices"
 	"strings"
 )
 
@@ -51,9 +52,18 @@ func HandleReceivedMessage(larkSubscriptionEventDecryptedRequest structs.LarkSub
 		returnText, _ := json.Marshal(returnObject)
 		ReplyMessage(*larkSubscriptionEventDecryptedRequest.Event.Message.MessageId, string(returnText))
 	case strings.HasPrefix(gjson.Get(*messages[0].Content, "text").String(), constants.CommandChatgptConfig):
+		config := strings.Split(gjson.Get(*messages[0].Content, "text").String(), " ")[1]
 		resp := make(map[string]string)
-		resp["CurrentModel"] = constants.CurrentChatGPTModel
-		resp["SupportedModels"] = strings.Join(constants.ChatGPTModels[:], ",")
+		if slices.Contains(constants.ChatGPTModels[:], config) {
+			constants.CurrentChatGPTModel = config
+			resp["ConfigResult"] = "Fail"
+			resp["CurrentModel"] = constants.CurrentChatGPTModel
+			resp["SupportedModels"] = strings.Join(constants.ChatGPTModels[:], ",")
+		} else {
+			resp["ConfigResult"] = "Success"
+			resp["CurrentModel"] = constants.CurrentChatGPTModel
+			resp["SupportedModels"] = strings.Join(constants.ChatGPTModels[:], ",")
+		}
 		respText, _ := json.Marshal(resp)
 		returnObject := structs.LarkMessageText{Text: string(respText)}
 		returnText, _ := json.Marshal(returnObject)
