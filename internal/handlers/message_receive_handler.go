@@ -56,11 +56,11 @@ func HandleReceivedMessage(larkSubscriptionEventDecryptedRequest structs.LarkSub
 		resp := make(map[string]string)
 		if slices.Contains(constants.ChatGPTModels[:], config) {
 			constants.CurrentChatGPTModel = config
-			resp["ConfigResult"] = "Fail"
+			resp["ConfigResult"] = "Success"
 			resp["CurrentModel"] = constants.CurrentChatGPTModel
 			resp["SupportedModels"] = strings.Join(constants.ChatGPTModels[:], ",")
 		} else {
-			resp["ConfigResult"] = "Success"
+			resp["ConfigResult"] = "Fail"
 			resp["CurrentModel"] = constants.CurrentChatGPTModel
 			resp["SupportedModels"] = strings.Join(constants.ChatGPTModels[:], ",")
 		}
