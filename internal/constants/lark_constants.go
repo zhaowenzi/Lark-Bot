@@ -8,7 +8,7 @@ const (
 	ChatTypeGroup        = `group`
 	ChatTypeP2p          = `p2p`
 	CommandChatgpt       = `/chatgpt`
-	CommandChatgptConfig = `/chatgptConfig`
+	CommandChatgptConfig = `/config`
 	SenderTypeUser       = `user`
 )
 
